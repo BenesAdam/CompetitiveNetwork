@@ -5,6 +5,25 @@
 
 using namespace std;
 
+void SplitVector(float factor, vector<vector<float>> vIn, vector<vector<float>>& vOut1, vector<vector<float>>& vOut2)
+{
+	unsigned int nPivot = (unsigned int)(factor * vIn.size());
+	auto itOut1_first	= vIn.begin();
+	auto itOut1_last	= vIn.begin() + nPivot;
+	auto itOut2_first	= vIn.begin() + nPivot;
+	auto itOut2_last	= vIn.end();
+	vOut1 = vector<vector<float>>(itOut1_first, itOut1_last);
+	vOut2 = vector<vector<float>>(itOut2_first, itOut2_last);
+}
+
+void PrintVector(vector<float> vInput)
+{
+	for (float fValue : vInput)
+	{
+		cout << fValue << " ";
+	}
+}
+
 int main()
 {
 	// link: https://drive.google.com/open?id=1JEM_gcdX95I2N-95Hoxea2qWArsvjMz7&authuser=adam.beny.benes%40gmail.com&usp=drive_fs
@@ -37,39 +56,49 @@ int main()
 	network.Print();
 	cout << endl;
 
-	const unsigned int oneFourth = (int)(trainingSet.GetInputsSize() / 4.0);
-	vector<vector<float>> vInputs = trainingSet.GetInputs();
-	auto input_test_first  = vInputs.begin();
-	auto input_test_last   = vInputs.begin() + oneFourth;
-	auto input_train_first = vInputs.begin() + oneFourth + 1;
-	auto input_train_last  = vInputs.end();
-	auto vInputsTest = vector<vector<float>>(input_test_first, input_test_last);
-	auto vInputsTrain = vector<vector<float>>(input_train_first, input_train_last);
+	vector<vector<float>> vInputsTrain;
+	vector<vector<float>> vInputsTest;
+	SplitVector(0.8, trainingSet.GetInputs(), vInputsTrain, vInputsTest);
 
-	vector<vector<float>> vOutput = trainingSet.GetOutputs();
-	auto output_test_first = vOutput.begin();
-	auto output_test_last = vOutput.begin() + oneFourth;
-	auto output_train_first = vOutput.begin() + oneFourth + 1;
-	auto output_train_last = vOutput.end();
-	auto vOutputTest = vector<vector<float>>(output_test_first, output_test_last);
-	auto vOutputTrain = vector<vector<float>>(output_train_first, output_train_last);
 
+
+	float fError = network.GetError(vInputsTrain);
+	cout << "Error start: " << fError << endl;
+	float fErrorPrev;
+	unsigned int nSameErrorTimes = 0;
 	unsigned int nIterations = 0;
-	cout << "Error on start: " << network.GetError(vInputsTrain) << endl;
 	float fTheta = 0.9;
-	while (network.GetError(vInputsTrain) > 0.1)
+	while(true)
 	{
+		fErrorPrev = fError;
 		network.TrainingKohonen(vInputsTrain, fTheta);
-		if(nIterations % 100 == 0)
-			fTheta *= 0.99;
-
-		cout << fTheta << " " << network.GetError(vInputs) << endl;
+		fError = network.GetError(vInputsTrain);
+		if (nIterations % 50 == 0)
+			fTheta *= 0.95;
 		nIterations++;
+
+		if (fErrorPrev == fError)
+		{
+			nSameErrorTimes++;
+			if (nSameErrorTimes >= 300)
+				break;
+		}
+		else
+		{
+			nSameErrorTimes = 0;
+		}
 	}
 
-	cout << "Trained." << endl;
-	cout << "Error on end: " << network.GetError(vInputsTrain) << endl;
+	cout << "Trained. Iterations: " << nIterations << endl;
+	cout << "Error end: " << network.GetError(vInputsTrain) << endl;
 
-
+	for (unsigned int nIndex = 0; nIndex < trainingSet.GetInputsSize(); nIndex++)
+	{
+		vector<float> vInput  = trainingSet.GetInputs()[nIndex];
+		vector<float> vOutput = trainingSet.GetOutputs()[nIndex];
+		unsigned int nWinner = network.GetBestCompetitor(vInput);
+		PrintVector(vOutput);
+		cout << "-> " << nWinner << endl;
+	}
 
 }
