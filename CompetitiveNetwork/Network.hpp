@@ -19,11 +19,13 @@ class cNetwork
 	vector<vector<float>> W;
 
 	float CompetitorScore(unsigned int competitor, vector<float> inputs);
+	void AssignBestCompetitorAndScore(vector<float> vInput, unsigned int& nWinner, float& fScore);
 public: 
 	cNetwork(unsigned int nInputs, unsigned int nCompetitors);
 	void RandomWeights();
 	void Print();
 	unsigned int GetBestCompetitor(vector<float> inputs);
 	float GetError(vector<vector<float>> vInputs);
+	float TrainingKohonen(vector<vector<float>> vInputs, float fTheta);
 };
 
