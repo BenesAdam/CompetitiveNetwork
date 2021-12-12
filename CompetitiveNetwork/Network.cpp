@@ -44,16 +44,9 @@ void cNetwork::Print()
 
 unsigned int cNetwork::GetBestCompetitor(vector<float> vInput)
 {
-	float fBestScore = FLT_MAX;
+	float fBestScore = 0;
 	unsigned int nBestCompetitor = 0;
-	for (unsigned int nCompetitor = 0; nCompetitor < nM; nCompetitor++)
-	{
-		float fActualScore = CompetitorScore(nCompetitor, vInput);
-		if (fActualScore < fBestScore)
-		{
-			nBestCompetitor = nCompetitor;
-		}
-	}
+	AssignBestCompetitorAndScore(vInput, nBestCompetitor, fBestScore);
 	return nBestCompetitor;
 }
 
